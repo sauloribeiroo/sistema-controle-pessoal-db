@@ -3,12 +3,6 @@
 Script completo de criação do banco `pessoal_db` com todas as tabelas, constraints, índices e trigger.
 
 ```sql
--- ============================================================
---  MER — Sistema de Controle de Pessoal (Cenário 3)
---  Modelo Entidade-Relacionamento — 3ª Forma Normal (3FN)
---  Banco de dados: MySQL 8.x
---  VERSÃO COMPLETA — inclui todos os campos das consultas
--- ============================================================
 
 
 
@@ -20,9 +14,7 @@ USE pessoal_db;
 
 
 
--- ============================================================
---  BLOCO 1 — DADOS PESSOAIS DO FUNCIONÁRIO
--- ============================================================
+-- DADOS PESSOAIS DO FUNCIONÁRIO
 
 CREATE TABLE pessoal_db.funcionario (
     id_func        INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -63,9 +55,7 @@ CREATE TABLE pessoal_db.endereco (
     CONSTRAINT chk_cep CHECK (cep REGEXP '^[0-9]{8}$')
 ) COMMENT '1 funcionário reside em N endereços';
 
--- ============================================================
---  BLOCO 2 — NECESSIDADE ESPECIAL E OBRIGAÇÃO DA EMPRESA
--- ============================================================
+-- NECESSIDADE ESPECIAL E OBRIGAÇÃO DA EMPRESA
 
 CREATE TABLE pessoal_db.necessidade_especial (
     id_necess INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -90,9 +80,7 @@ CREATE TABLE pessoal_db.obrigacao_empresa (
         ON DELETE CASCADE ON UPDATE CASCADE
 ) COMMENT '1 necessidade especial gera N obrigações da empresa';
 
--- ============================================================
---  BLOCO 3 — DEPENDENTE
--- ============================================================
+-- DEPENDENTE
 
 CREATE TABLE pessoal_db.dependente (
     id_dep        INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -106,9 +94,7 @@ CREATE TABLE pessoal_db.dependente (
         ON DELETE CASCADE ON UPDATE CASCADE
 ) COMMENT '1 funcionário tem N dependentes';
 
--- ============================================================
---  BLOCO 4 — SAÚDE: DOENÇA
--- ============================================================
+-- SAÚDE: DOENÇA
 
 CREATE TABLE pessoal_db.doenca (
     id_doenca INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -129,9 +115,7 @@ CREATE TABLE pessoal_db.diagnostico (
         ON DELETE RESTRICT ON UPDATE CASCADE
 ) COMMENT 'N:N — funcionário diagnosticado com doenças (com data e observação)';
 
--- ============================================================
---  BLOCO 5 — SAÚDE: EXAME OCUPACIONAL
--- ============================================================
+-- SAÚDE: EXAME OCUPACIONAL
 
 CREATE TABLE pessoal_db.exame (
     id_exame    INT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
@@ -156,9 +140,7 @@ CREATE TABLE pessoal_db.realizacao_exame (
         ON DELETE RESTRICT ON UPDATE CASCADE
 ) COMMENT 'N:N — funcionário realiza N exames (com resultado e laudo de aptidão)';
 
--- ============================================================
---  BLOCO 6 — ORGANIZAÇÃO: SETOR, FUNÇÃO, HISTÓRICO DE LOTAÇÃO
--- ============================================================
+-- ORGANIZAÇÃO: SETOR, FUNÇÃO, HISTÓRICO DE LOTAÇÃO
 
 CREATE TABLE pessoal_db.setor (
     id_setor  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -188,10 +170,8 @@ CREATE TABLE pessoal_db.historico_lotacao (
     CONSTRAINT chk_datas_hist CHECK (data_fim IS NULL OR data_fim >= data_inicio)
 ) COMMENT 'Histórico ternário: funcionário × setor × função, com datas';
 
--- ============================================================
 --  BLOCO 7 — FÉRIAS
---  Regra: no máximo 30% da força de trabalho do setor em férias
--- ============================================================
+--  Regra: no máximo 30% da força de trabalho do setor em férias (Usando o Trigger)
 
 CREATE TABLE pessoal_db.ferias (
     id_ferias   INT UNSIGNED     AUTO_INCREMENT PRIMARY KEY,
@@ -239,9 +219,7 @@ BEGIN
 END$$
 DELIMITER ;
 
--- ============================================================
---  BLOCO 8 — CURRÍCULO, CURSO E COMPETÊNCIA
--- ============================================================
+-- CURRÍCULO, CURSO E COMPETÊNCIA
 
 CREATE TABLE pessoal_db.curriculo (
     id_curriculo       INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
@@ -301,9 +279,7 @@ CREATE TABLE pessoal_db.funcao_competencia (
         ON DELETE CASCADE ON UPDATE CASCADE
 ) COMMENT 'N:N — função requer N competências';
 
--- ============================================================
---  ÍNDICES COMPLEMENTARES
--- ============================================================
+-- ÍNDICES
 
 CREATE INDEX idx_historico_func  ON pessoal_db.historico_lotacao (id_func);
 CREATE INDEX idx_historico_setor ON pessoal_db.historico_lotacao (id_setor);
