@@ -70,34 +70,6 @@ sistema-controle-pessoal/
 4. **Férias mês a mês** — funcionários iniciando férias e percentual do setor em férias
 
 ---
-
-## 🚀 Como Executar
-
-1. Certifique-se de ter o **MySQL 8.x** instalado
-2. Execute os scripts na seguinte ordem:
-
-```bash
-# 1. Criação do banco e tabelas
-mysql -u root -p < sql/01_criacao_banco_completo.sql
-
-# 2. Carga de dados
-mysql -u root -p < sql/02_carga_dados.sql
-
-# 3. Consultas
-mysql -u root -p pessoal_db < sql/03_consultas.sql
-```
-
-Ou abra cada arquivo no **MySQL Workbench** e execute na ordem acima.
-
----
-
-## 🛠️ Tecnologias
-
-- MySQL 8.x
-- MySQL Workbench
-
----
-
 ## 👨‍💻 Autor
 
 Desenvolvido como trabalho prático da disciplina de Banco de Dados.
