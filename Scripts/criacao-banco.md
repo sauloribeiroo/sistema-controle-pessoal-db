@@ -8,7 +8,7 @@ Script completo de criação do banco `pessoal_db` com todas as tabelas, constra
 
 DROP SCHEMA IF EXISTS pessoal_db;
 
-CREATE SCHEMA pessoal_db
+CREATE SCHEMA pessoal_db;
 
 USE pessoal_db;
 
@@ -35,9 +35,7 @@ CREATE TABLE pessoal_db.telefone (
     id_tel   INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     id_func  INT UNSIGNED NOT NULL,
     numero   VARCHAR(20)  NOT NULL,
-    tipo     ENUM('celular','residencial','comercial') NOT NULL DEFAULT 'celular',
-    CONSTRAINT fk_tel_func FOREIGN KEY (id_func) REFERENCES pessoal_db.funcionario(id_func)
-        ON DELETE CASCADE ON UPDATE CASCADE
+    tipo     ENUM('celular','residencial','comercial') NOT NULL DEFAULT 'celular'
 ) COMMENT '1 funcionário possui N telefones';
 
 CREATE TABLE pessoal_db.endereco (
@@ -49,8 +47,6 @@ CREATE TABLE pessoal_db.endereco (
     cidade     VARCHAR(80)  NOT NULL,
     uf         CHAR(2)      NOT NULL,
     cep        CHAR(8)      NOT NULL,
-    CONSTRAINT fk_end_func FOREIGN KEY (id_func) REFERENCES pessoal_db.funcionario(id_func)
-        ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT chk_uf  CHECK (uf  REGEXP '^[A-Z]{2}$'),
     CONSTRAINT chk_cep CHECK (cep REGEXP '^[0-9]{8}$')
 ) COMMENT '1 funcionário reside em N endereços';
@@ -65,19 +61,13 @@ CREATE TABLE pessoal_db.necessidade_especial (
 CREATE TABLE pessoal_db.funcionario_necessidade (
     id_func   INT UNSIGNED NOT NULL,
     id_necess INT UNSIGNED NOT NULL,
-    PRIMARY KEY (id_func, id_necess),
-    CONSTRAINT fk_fn_func   FOREIGN KEY (id_func)   REFERENCES pessoal_db.funcionario(id_func)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_fn_necess FOREIGN KEY (id_necess) REFERENCES pessoal_db.necessidade_especial(id_necess)
-        ON DELETE CASCADE ON UPDATE CASCADE
+    PRIMARY KEY (id_func, id_necess)
 ) COMMENT 'N:N — Funcionário possui N necessidades especiais';
 
 CREATE TABLE pessoal_db.obrigacao_empresa (
     id_obrig  INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     id_necess INT UNSIGNED NOT NULL,
-    descricao VARCHAR(300) NOT NULL,
-    CONSTRAINT fk_obrig_necess FOREIGN KEY (id_necess) REFERENCES pessoal_db.necessidade_especial(id_necess)
-        ON DELETE CASCADE ON UPDATE CASCADE
+    descricao VARCHAR(300) NOT NULL
 ) COMMENT '1 necessidade especial gera N obrigações da empresa';
 
 -- DEPENDENTE
@@ -89,9 +79,7 @@ CREATE TABLE pessoal_db.dependente (
     tipo_dep      VARCHAR(50)  NOT NULL COMMENT 'filho(a), cônjuge, pai, mãe, etc.',
     dt_nascimento DATE         NOT NULL,
     universitario TINYINT      NOT NULL DEFAULT 0
-        COMMENT '1=sim; dependente universitário é IR até 24 anos',
-    CONSTRAINT fk_dep_func FOREIGN KEY (id_func) REFERENCES pessoal_db.funcionario(id_func)
-        ON DELETE CASCADE ON UPDATE CASCADE
+        COMMENT '1=sim; dependente universitário é IR até 24 anos'
 ) COMMENT '1 funcionário tem N dependentes';
 
 -- SAÚDE: DOENÇA
@@ -108,11 +96,7 @@ CREATE TABLE pessoal_db.diagnostico (
     id_doenca      INT UNSIGNED NOT NULL,
     dt_diagnostico DATE         NOT NULL,
     observacao     TEXT,
-    PRIMARY KEY (id_func, id_doenca, dt_diagnostico),
-    CONSTRAINT fk_diag_func   FOREIGN KEY (id_func)   REFERENCES pessoal_db.funcionario(id_func)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_diag_doenca FOREIGN KEY (id_doenca) REFERENCES pessoal_db.doenca(id_doenca)
-        ON DELETE RESTRICT ON UPDATE CASCADE
+    PRIMARY KEY (id_func, id_doenca, dt_diagnostico)
 ) COMMENT 'N:N — funcionário diagnosticado com doenças (com data e observação)';
 
 -- SAÚDE: EXAME OCUPACIONAL
@@ -133,11 +117,7 @@ CREATE TABLE pessoal_db.realizacao_exame (
     resultado     DECIMAL(10,3) NOT NULL,
     observacao    TEXT,
     apto          TINYINT       NOT NULL DEFAULT 1
-                  COMMENT '1 = APTO; 0 = INAPTO para o trabalho',
-    CONSTRAINT fk_rex_func  FOREIGN KEY (id_func)  REFERENCES pessoal_db.funcionario(id_func)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_rex_exame FOREIGN KEY (id_exame) REFERENCES pessoal_db.exame(id_exame)
-        ON DELETE RESTRICT ON UPDATE CASCADE
+                  COMMENT '1 = APTO; 0 = INAPTO para o trabalho'
 ) COMMENT 'N:N — funcionário realiza N exames (com resultado e laudo de aptidão)';
 
 -- ORGANIZAÇÃO: SETOR, FUNÇÃO, HISTÓRICO DE LOTAÇÃO
@@ -161,12 +141,6 @@ CREATE TABLE pessoal_db.historico_lotacao (
     id_funcao   INT UNSIGNED NOT NULL,
     data_inicio DATE         NOT NULL,
     data_fim    DATE                   COMMENT 'NULL = lotação atual',
-    CONSTRAINT fk_hl_func   FOREIGN KEY (id_func)   REFERENCES pessoal_db.funcionario(id_func)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_hl_setor  FOREIGN KEY (id_setor)  REFERENCES pessoal_db.setor(id_setor)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT fk_hl_funcao FOREIGN KEY (id_funcao) REFERENCES pessoal_db.funcao(id_funcao)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT chk_datas_hist CHECK (data_fim IS NULL OR data_fim >= data_inicio)
 ) COMMENT 'Histórico ternário: funcionário × setor × função, com datas';
 
@@ -179,8 +153,6 @@ CREATE TABLE pessoal_db.ferias (
     data_inicio DATE             NOT NULL,
     data_fim    DATE             NOT NULL,
     qtd_dias    TINYINT UNSIGNED NOT NULL,
-    CONSTRAINT fk_fer_func FOREIGN KEY (id_func) REFERENCES pessoal_db.funcionario(id_func)
-        ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT chk_ferias_datas CHECK (data_fim >= data_inicio)
 ) COMMENT '1 funcionário usufrui N períodos de férias';
 
@@ -229,9 +201,7 @@ CREATE TABLE pessoal_db.curriculo (
         'medio_incompleto','medio_completo',
         'tecnico','superior_incompleto','superior_completo',
         'pos_graduacao','mestrado','doutorado'
-    ) NOT NULL,
-    CONSTRAINT fk_curr_func FOREIGN KEY (id_func) REFERENCES pessoal_db.funcionario(id_func)
-        ON DELETE CASCADE ON UPDATE CASCADE
+    ) NOT NULL
 ) COMMENT '1:1 — funcionário possui 1 currículo';
 
 CREATE TABLE pessoal_db.competencia (
@@ -252,31 +222,19 @@ CREATE TABLE pessoal_db.curriculo_curso (
     data_fim      DATE,
     carga_horaria SMALLINT UNSIGNED NOT NULL COMMENT 'Horas cursadas nesta realização',
     PRIMARY KEY (id_curriculo, id_curso, data_inicio),
-    CONSTRAINT fk_cc_curriculo FOREIGN KEY (id_curriculo) REFERENCES pessoal_db.curriculo(id_curriculo)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_cc_curso     FOREIGN KEY (id_curso)     REFERENCES pessoal_db.curso(id_curso)
-        ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT chk_cc_datas CHECK (data_fim IS NULL OR data_fim >= data_inicio)
 ) COMMENT 'N:N — currículo inclui N cursos (com datas e carga horária da realização)';
 
 CREATE TABLE pessoal_db.curso_competencia (
     id_curso       INT UNSIGNED NOT NULL,
     id_competencia INT UNSIGNED NOT NULL,
-    PRIMARY KEY (id_curso, id_competencia),
-    CONSTRAINT fk_cco_curso FOREIGN KEY (id_curso)       REFERENCES pessoal_db.curso(id_curso)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_cco_comp  FOREIGN KEY (id_competencia) REFERENCES pessoal_db.competencia(id_competencia)
-        ON DELETE CASCADE ON UPDATE CASCADE
+    PRIMARY KEY (id_curso, id_competencia)
 ) COMMENT 'N:N — curso desenvolve N competências';
 
 CREATE TABLE pessoal_db.funcao_competencia (
     id_funcao      INT UNSIGNED NOT NULL,
     id_competencia INT UNSIGNED NOT NULL,
-    PRIMARY KEY (id_funcao, id_competencia),
-    CONSTRAINT fk_fc_funcao FOREIGN KEY (id_funcao)      REFERENCES pessoal_db.funcao(id_funcao)
-        ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT fk_fc_comp   FOREIGN KEY (id_competencia) REFERENCES pessoal_db.competencia(id_competencia)
-        ON DELETE CASCADE ON UPDATE CASCADE
+    PRIMARY KEY (id_funcao, id_competencia)
 ) COMMENT 'N:N — função requer N competências';
 
 -- ÍNDICES
@@ -287,4 +245,75 @@ CREATE INDEX idx_ferias_func     ON pessoal_db.ferias             (id_func);
 CREATE INDEX idx_diag_func       ON pessoal_db.diagnostico        (id_func);
 CREATE INDEX idx_rex_func        ON pessoal_db.realizacao_exame   (id_func);
 CREATE INDEX idx_curriculo_func  ON pessoal_db.curriculo          (id_func);
+
+-- CHAVES ESTRANGEIRAS
+-- Criadas ao final para garantir que todas as tabelas referenciadas já existam
+
+ALTER TABLE pessoal_db.telefone
+    ADD CONSTRAINT fk_tel_func FOREIGN KEY (id_func) REFERENCES pessoal_db.funcionario(id_func)
+        ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE pessoal_db.endereco
+    ADD CONSTRAINT fk_end_func FOREIGN KEY (id_func) REFERENCES pessoal_db.funcionario(id_func)
+        ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE pessoal_db.funcionario_necessidade
+    ADD CONSTRAINT fk_fn_func   FOREIGN KEY (id_func)   REFERENCES pessoal_db.funcionario(id_func)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    ADD CONSTRAINT fk_fn_necess FOREIGN KEY (id_necess) REFERENCES pessoal_db.necessidade_especial(id_necess)
+        ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE pessoal_db.obrigacao_empresa
+    ADD CONSTRAINT fk_obrig_necess FOREIGN KEY (id_necess) REFERENCES pessoal_db.necessidade_especial(id_necess)
+        ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE pessoal_db.dependente
+    ADD CONSTRAINT fk_dep_func FOREIGN KEY (id_func) REFERENCES pessoal_db.funcionario(id_func)
+        ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE pessoal_db.diagnostico
+    ADD CONSTRAINT fk_diag_func   FOREIGN KEY (id_func)   REFERENCES pessoal_db.funcionario(id_func)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    ADD CONSTRAINT fk_diag_doenca FOREIGN KEY (id_doenca) REFERENCES pessoal_db.doenca(id_doenca)
+        ON DELETE RESTRICT ON UPDATE CASCADE;
+
+ALTER TABLE pessoal_db.realizacao_exame
+    ADD CONSTRAINT fk_rex_func  FOREIGN KEY (id_func)  REFERENCES pessoal_db.funcionario(id_func)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    ADD CONSTRAINT fk_rex_exame FOREIGN KEY (id_exame) REFERENCES pessoal_db.exame(id_exame)
+        ON DELETE RESTRICT ON UPDATE CASCADE;
+
+ALTER TABLE pessoal_db.historico_lotacao
+    ADD CONSTRAINT fk_hl_func   FOREIGN KEY (id_func)   REFERENCES pessoal_db.funcionario(id_func)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    ADD CONSTRAINT fk_hl_setor  FOREIGN KEY (id_setor)  REFERENCES pessoal_db.setor(id_setor)
+        ON DELETE RESTRICT ON UPDATE CASCADE,
+    ADD CONSTRAINT fk_hl_funcao FOREIGN KEY (id_funcao) REFERENCES pessoal_db.funcao(id_funcao)
+        ON DELETE RESTRICT ON UPDATE CASCADE;
+
+ALTER TABLE pessoal_db.ferias
+    ADD CONSTRAINT fk_fer_func FOREIGN KEY (id_func) REFERENCES pessoal_db.funcionario(id_func)
+        ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE pessoal_db.curriculo
+    ADD CONSTRAINT fk_curr_func FOREIGN KEY (id_func) REFERENCES pessoal_db.funcionario(id_func)
+        ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE pessoal_db.curriculo_curso
+    ADD CONSTRAINT fk_cc_curriculo FOREIGN KEY (id_curriculo) REFERENCES pessoal_db.curriculo(id_curriculo)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    ADD CONSTRAINT fk_cc_curso     FOREIGN KEY (id_curso)     REFERENCES pessoal_db.curso(id_curso)
+        ON DELETE RESTRICT ON UPDATE CASCADE;
+
+ALTER TABLE pessoal_db.curso_competencia
+    ADD CONSTRAINT fk_cco_curso FOREIGN KEY (id_curso)       REFERENCES pessoal_db.curso(id_curso)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    ADD CONSTRAINT fk_cco_comp  FOREIGN KEY (id_competencia) REFERENCES pessoal_db.competencia(id_competencia)
+        ON DELETE CASCADE ON UPDATE CASCADE;
+
+ALTER TABLE pessoal_db.funcao_competencia
+    ADD CONSTRAINT fk_fc_funcao FOREIGN KEY (id_funcao)      REFERENCES pessoal_db.funcao(id_funcao)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    ADD CONSTRAINT fk_fc_comp   FOREIGN KEY (id_competencia) REFERENCES pessoal_db.competencia(id_competencia)
+        ON DELETE CASCADE ON UPDATE CASCADE;
 ```
